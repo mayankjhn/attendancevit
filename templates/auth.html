@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>OTP Verification</title>
+</head>
+<body>
+    <h2>Enter OTP</h2>
+    <input type="text" id="otpInput" placeholder="Enter OTP">
+    <button onclick="verifyOTP()">Verify</button>
+    <p id="otpMessage"></p>
+
+    <script>
+        function verifyOTP() {
+            let enteredOTP = document.getElementById("otpInput").value;
+
+            fetch("/verify_otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ otp: enteredOTP })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "/students";  // Redirect to students page if OTP is correct
+                } else {
+                    document.getElementById("otpMessage").innerText = data.message;  // Show error message
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

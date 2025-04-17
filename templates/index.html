@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Taker - VIT Bhopal</title>
+    <style>
+        /* General Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(90deg, #004080, #007bff);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header img {
+            height: 40px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-profile img {
+            height: 35px;
+            width: 35px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 60px;
+            background-color: #004080;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 80px;
+        }
+
+        .sidebar a {
+            margin: 15px 0;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+        }
+
+        .sidebar a:hover {
+            color: #ffcc00;
+        }
+
+        /* Main Content */
+        .container {
+            margin-left: 80px;
+            margin-top: 50px;
+            padding: 20px;
+            background: white;
+            width: 50%;
+            margin: auto;
+            box-shadow: 0px 0px 10px gray;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #004080;
+        }
+
+        #qrCodeContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #timer {
+            font-size: 18px;
+            color: red;
+            margin-top: 10px;
+        }
+
+        .button {
+            background-color: #004080;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">Attendance Taker - VIT Bhopal</div>
+        <div class="user-profile">
+            <span>23BCY10304 (STUDENT)</span>
+            <img src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar">
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#">🏠</a>
+        <a href="#">📅</a>
+        <a href="#">📊</a>
+        <a href="#">⚙️</a>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1>Scan to Mark Attendance</h1>
+        <div id="qrCodeContainer">
+            <div id="qrCode"></div>
+        </div>
+        <p id="timer">Next QR in: 30s</p>
+        <button class="button" onclick="updateQRCode()">Refresh Now</button>
+    </div>
+
+    <!-- QR Code Generator -->
+    <script>
+        class QRCode {
+            constructor(container, options) {
+                this.container = container;
+                this.text = options.text;
+                this.width = options.width || 200;
+                this.height = options.height || 200;
+                this.generate();
+            }
+
+            generate() {
+                this.container.innerHTML = "";
+                let img = document.createElement("img");
+                img.src = "https://api.qrserver.com/v1/create-qr-code/?size=" + this.width + "x" + this.height + "&data=" + encodeURIComponent(this.text);
+                img.width = this.width;
+                img.height = this.height;
+                this.container.appendChild(img);
+            }
+        }
+
+        let qrDiv = document.getElementById("qrCode");
+        let timerText = document.getElementById("timer");
+        let timeLeft = 30;
+
+        function generateRandomCode() {
+            return "ATTEND-" + Math.random().toString(36).substr(2, 10);
+        }
+
+        function updateQRCode() {
+            new QRCode(qrDiv, {
+                text: generateRandomCode(),
+                width: 200,
+                height: 200
+            });
+            timeLeft = 30;
+        }
+
+        // Initial QR Code
+        updateQRCode();
+
+        // Update every 30 seconds
+        setInterval(updateQRCode, 30000);
+
+        // Timer countdown
+        setInterval(() => {
+            timeLeft--;
+            timerText.innerHTML = `Next QR in: ${timeLeft}s`;
+        }, 1000);
+    </script>
+
+</body>
+</html>

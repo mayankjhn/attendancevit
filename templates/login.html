@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 350px;
+            margin: 100px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter Email and Passkey</h1>
+        <form id="loginForm">
+            <input type="email" id="email" name="email" placeholder="Enter VIT Bhopal Email" required>
+            <input type="password" id="passkey" name="passkey" placeholder="Enter Passkey" required>
+            <button type="submit">Next</button>
+        </form>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").onsubmit = function (event) {
+    event.preventDefault();
+    let email = document.getElementById("email").value;
+    let passkey = document.getElementById("passkey").value;
+
+    fetch("http://127.0.0.1:5000/check_student", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, passkey: passkey })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Server Response:", data); // ✅ Debugging line
+
+        if (data.success) {
+            console.log("Login Successful. Redirecting...");
+            localStorage.setItem("student_email", email); // ✅ Store email
+
+            // Redirect to success page
+            window.location.href = "attendance_success.html";
+        } else {
+            document.getElementById("message").innerText = data.message || "Something went wrong!";
+        }
+    })
+    .catch(error => {
+        console.error("Fetch Error:", error);
+        document.getElementById("message").innerText = "Network error or server issue!";
+    });
+};
+    </script>
+</body>
+</html>

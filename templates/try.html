@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIT Bhopal - Attendance System</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        /* General Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            margin-top: 80px;
+            background: white;
+            width: 50%;
+            padding: 20px;
+            margin: auto;
+            box-shadow: 0px 0px 10px gray;
+            border-radius: 10px;
+        }
+        .button {
+            background-color: #004080;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #007bff;
+        }
+        #qrCodeContainer {
+            margin-top: 20px;
+            display: none;
+        }
+        #qrCode {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VIT Bhopal - Attendance System</h1>
+
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload"
+             data-client_id="187158612965-272dhjdv16323lfsqo7osi17dqhsc8sd.apps.googleusercontent.com"
+             data-login_uri="http://localhost:5000/auth"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+
+        <h2>Generate Your Attendance QR</h2>
+        <button class="button" onclick="generateQR()">Generate QR Code</button>
+
+        <div id="qrCodeContainer">
+            <h3>Scan this QR to mark attendance:</h3>
+            <img id="qrCode" src="" alt="QR Code">
+        </div>
+
+        <h2>Mark Attendance</h2>
+        <input type="email" id="studentEmail" placeholder="Enter your VIT email">
+        <button class="button" onclick="markAttendance()">Mark Attendance</button>
+    </div>
+
+    <script>
+        let userEmail = null;
+
+        function handleCredentialResponse(response) {
+            console.log("Google Token Received: ", response.credential);
+
+            fetch('/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Server Response:", data);
+
+                if (data.success) {
+                    alert("Login Successful!");
+                    userEmail = data.email;
+                    localStorage.setItem("userEmail", userEmail);
+                } else {
+                    alert("Authentication Failed: " + data.message);
+                }
+            })
+            .catch(err => console.error("Error:", err));
+        }
+
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "187158612965-272dhjdv16323lfsqo7osi17dqhsc8sd.apps.googleusercontent.com",
+                callback: handleCredentialResponse
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("g_id_signin"),
+                { theme: "outline", size: "large" }
+            );
+
+            google.accounts.id.prompt();
+        };
+
+        function generateQR() {
+            if (!userEmail) {
+                alert("Please log in with Google first!");
+                return;
+            }
+
+            fetch(`/generate_qr?email=${encodeURIComponent(userEmail)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to generate QR");
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                let qrCodeURL = URL.createObjectURL(blob);
+                document.getElementById("qrCode").src = qrCodeURL;
+                document.getElementById("qrCodeContainer").style.display = "block";
+            })
+            .catch(error => {
+                alert("Error generating QR: " + error.message);
+            });
+        }
+
+        function markAttendance() {
+            let email = document.getElementById("studentEmail").value;
+
+            if (!email) {
+                alert("Enter a valid VIT email to mark attendance!");
+                return;
+            }
+
+            fetch("/mark_attendance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Attendance Marked Successfully!");
+                } else {
+                    alert("Failed to mark attendance: " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("Error marking attendance: " + error.message);
+            });
+        }
+    </script>
+</body>
+</html>
