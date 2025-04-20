@@ -2,3 +2,4 @@ flask
 gunicorn
 flask-cors
 google-auth
+qrcode
